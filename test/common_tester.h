@@ -117,6 +117,8 @@ class CommonTester : public ::testing::Test
 
 public:
 
+  MANIF_MAKE_ALIGNED_OPERATOR_NEW_COND_TYPE(LieGroup)
+
   CommonTester()  = default;
   ~CommonTester() = default;
 
@@ -552,6 +554,8 @@ class JacobianTester : public ::testing::Test
   using Tangent  = typename LieGroup::Tangent;
 
 public:
+
+  MANIF_MAKE_ALIGNED_OPERATOR_NEW_COND_TYPE(LieGroup)
 
   JacobianTester()  = default;
   ~JacobianTester() = default;
