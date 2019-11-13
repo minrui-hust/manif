@@ -514,7 +514,8 @@ public:
 
 protected:
 
-  Scalar tol_ = Constants<Scalar>::eps;
+  // relax eps for float type
+  Scalar tol_ = (std::is_same<Scalar, float>::value)? 5e-7 : Constants<Scalar>::eps;
 
   LieGroup state;
   LieGroup state_other;
@@ -919,7 +920,9 @@ public:
 protected:
 
   double w_order_ = 1e-4;
-  double tol_ = 1e-8;
+
+  // relax tolerance for float type
+  Scalar tol_ = (std::is_same<Scalar, float>::value)? 1e-6 : 1e-8;
 
   LieGroup state;
   LieGroup state_other;
