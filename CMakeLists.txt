@@ -182,6 +182,7 @@ endif(BUILD_EXAMPLES)
 # ------------------------------------------------------------------------------
 
 if(ENABLE_COVERAGE)
+  add_definitions(-DMANIF_COVERAGE_ENABLED)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g ")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs")
