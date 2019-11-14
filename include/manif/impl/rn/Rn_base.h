@@ -85,10 +85,11 @@ public:
    * @note See Eqs. (129, 130).
    */
   template <typename _EigenDerived>
-  Eigen::Matrix<Scalar, Dim, 1>
+  auto
   act(const Eigen::MatrixBase<_EigenDerived> &v,
       tl::optional<Eigen::Ref<Eigen::Matrix<Scalar, Dim, DoF>>> J_vout_m = {},
-      tl::optional<Eigen::Ref<Eigen::Matrix<Scalar, Dim, Dim>>> J_vout_v = {}) const;
+      tl::optional<Eigen::Ref<Eigen::Matrix<Scalar, Dim, Dim>>> J_vout_v = {}) const
+  -> Eigen::Matrix<Scalar, Dim, 1>;
 
   /**
    * @brief Get the ajoint matrix of SO2 at this.
