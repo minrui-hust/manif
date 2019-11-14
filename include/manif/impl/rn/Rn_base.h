@@ -126,7 +126,7 @@ typename RnBase<_Derived>::LieGroup
 RnBase<_Derived>::inverse(OptJacobianRef J_minv_m) const
 {
   if (J_minv_m)
-    J_minv_m->setIdentity()*=Scalar(-1);
+    J_minv_m->setIdentity() *= Scalar(-1);
 
   return LieGroup(-coeffs());
 }
@@ -195,7 +195,7 @@ RnBase<_Derived>::act(const Eigen::MatrixBase<_EigenDerived> &v,
     J_vout_v->setIdentity();
   }
 
-  return v + coeffs();
+  return coeffs() + v;
 }
 
 template <typename _Derived>
