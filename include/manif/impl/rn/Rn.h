@@ -51,7 +51,7 @@ struct Rn : RnBase<Rn<_Scalar, _N>>
 {
 private:
 
-  static_assert(_N > 1, "N must be greater than 1 !");
+  static_assert(_N > 0, "N must be greater than 0 !");
 
   using Base = RnBase<Rn<_Scalar, _N>>;
   using Type = Rn<_Scalar, _N>;
@@ -94,6 +94,7 @@ protected:
   DataType data_;
 };
 
+template <typename _Scalar> using R1 = Rn<_Scalar, 1>;
 template <typename _Scalar> using R2 = Rn<_Scalar, 2>;
 template <typename _Scalar> using R3 = Rn<_Scalar, 3>;
 template <typename _Scalar> using R4 = Rn<_Scalar, 4>;
@@ -103,6 +104,7 @@ template <typename _Scalar> using R7 = Rn<_Scalar, 7>;
 template <typename _Scalar> using R8 = Rn<_Scalar, 8>;
 template <typename _Scalar> using R9 = Rn<_Scalar, 9>;
 
+MANIF_EXTRA_GROUP_TYPEDEF(R1)
 MANIF_EXTRA_GROUP_TYPEDEF(R2)
 MANIF_EXTRA_GROUP_TYPEDEF(R3)
 MANIF_EXTRA_GROUP_TYPEDEF(R4)

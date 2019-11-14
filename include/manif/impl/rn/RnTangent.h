@@ -46,6 +46,8 @@ struct RnTangent : RnTangentBase<RnTangent<_Scalar, _N>>
 {
 private:
 
+  static_assert(_N > 0, "N must be greater than 0 !");
+
   using Base = RnTangentBase<RnTangent<_Scalar, _N>>;
   using Type = RnTangent<_Scalar, _N>;
 
@@ -82,6 +84,7 @@ protected:
   DataType data_;
 };
 
+template <typename _Scalar> using R1Tangent = RnTangent<_Scalar, 1>;
 template <typename _Scalar> using R2Tangent = RnTangent<_Scalar, 2>;
 template <typename _Scalar> using R3Tangent = RnTangent<_Scalar, 3>;
 template <typename _Scalar> using R4Tangent = RnTangent<_Scalar, 4>;
@@ -91,6 +94,7 @@ template <typename _Scalar> using R7Tangent = RnTangent<_Scalar, 7>;
 template <typename _Scalar> using R8Tangent = RnTangent<_Scalar, 8>;
 template <typename _Scalar> using R9Tangent = RnTangent<_Scalar, 9>;
 
+MANIF_EXTRA_GROUP_TYPEDEF(R1Tangent)
 MANIF_EXTRA_GROUP_TYPEDEF(R2Tangent)
 MANIF_EXTRA_GROUP_TYPEDEF(R3Tangent)
 MANIF_EXTRA_GROUP_TYPEDEF(R4Tangent)
