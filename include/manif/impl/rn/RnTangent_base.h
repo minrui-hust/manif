@@ -154,7 +154,7 @@ template <typename _Derived>
 typename RnTangentBase<_Derived>::Jacobian
 RnTangentBase<_Derived>::smallAdj() const
 {
-  static const Jacobian smallAdj = Jacobian::Identity();
+  static const Jacobian smallAdj = Jacobian::Constant(0);
   return smallAdj;
 }
 
