@@ -13,8 +13,6 @@ using namespace manif;
 // @todo: investigate why only this alignment is troublesome
 // especially, SO3 wasn't an issue despite being Eigen::Vector4d too...
 EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(R4d)
-EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(R8d)
-EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(R8f)
 
 #ifdef MANIF_COVERAGE_ENABLED
 
@@ -22,6 +20,9 @@ MANIF_TEST(R4d);
 MANIF_TEST_JACOBIANS(R4d);
 
 #else
+
+EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(R8d)
+EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(R8f)
 
 // This is a little too heavy for coverage and not relevant...
 
