@@ -35,8 +35,8 @@ public:
 
   /**
    * @brief Hat operator of Rn.
-   * @return An element of the Lie algebra so2 (skew-symmetric matrix).
-   * @note See Eqs. (112, 113).
+   * @return An element of the Lie algebra rn.
+   * @note See Appendix E.
    */
   LieAlg hat() const;
 
@@ -45,7 +45,7 @@ public:
    * @param[out] -optional- J_m_t Jacobian of the Rn element wrt this.
    * @return The Rn element.
    * @note This is the exp() map with the argument in vector form.
-   * @note See Eqs. (114, 116) and Eq. (126).
+   * @note See Eqs. (184) and Eq. (191).
    */
   LieGroup exp(OptJacobianRef J_m_t = {}) const;
 
@@ -59,26 +59,26 @@ public:
 
   /**
    * @brief Get the right Jacobian of Rn.
-   * @note See Eq. (126).
+   * @note See Eq. (191).
    */
   Jacobian rjac() const;
 
   /**
    * @brief Get the left Jacobian of Rn.
-   * @note See Eq. (126).
+   * @note See Eq. (191).
    */
   Jacobian ljac() const;
 
   /**
    * @brief Get the inverse of the right Jacobian of Rn.
-   * @note See Eq. (126).
+   * @note See Eq. (191).
    * @see rjac.
    */
   Jacobian rjacinv() const;
 
   /**
    * @brief Get the inverse of the right Jacobian of Rn.
-   * @note See Eq. (126).
+   * @note See Eq. (191).
    * @see ljac.
    */
   Jacobian ljacinv() const;

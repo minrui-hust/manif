@@ -13,8 +13,8 @@ namespace manif {
 //
 
 /**
- * @brief The base class of the R^n group.
- * @note See Appendix E
+ * @brief The base class of the Rn group.
+ * @note See Appendix E.
  */
 template <typename _Derived>
 struct RnBase : LieGroupBase<_Derived>
@@ -40,17 +40,17 @@ public:
    * @brief Get the inverse of this.
    * @param[out] -optional- J_minv_m Jacobian of the inverse wrt this.
    * @note r^-1 = -r
-   * @note See Eqs. (118,124).
+   * @note See Appendix E and Eq. (189).
    */
   LieGroup inverse(OptJacobianRef J_minv_m = {}) const;
 
   /**
-   * @brief Get the SO2 corresponding Lie algebra element in vector form.
+   * @brief Get the Rn corresponding Lie algebra element in vector form.
    * @param[out] -optional- J_t_m Jacobian of the tangent wrt to this.
-   * @return The SO2 tangent of this.
+   * @return The Rn tangent of this.
    * @note This is the log() map in vector form.
-   * @note See Eq. (115) & Eqs. (79,126).
-   * @see SO2Tangent.
+   * @note See Appendix E.
+   * @see RnTangent.
    */
   Tangent log(OptJacobianRef J_t_m = {}) const;
 
@@ -63,13 +63,12 @@ public:
   Tangent lift(OptJacobianRef J_t_m = {}) const;
 
   /**
-   * @brief Composition of this and another SO2 element.
-   * @param[in] m Another SO2 element.
+   * @brief Composition of this and another Rn element.
+   * @param[in] m Another Rn element.
    * @param[out] -optional- J_mc_ma Jacobian of the composition wrt this.
    * @param[out] -optional- J_mc_mb Jacobian of the composition wrt m.
    * @return The composition of 'this . m'.
-   * @note z_c = z_a z_b.
-   * @note See Eq. (125).
+   * @note See Eq. (190).
    */
   template <typename _DerivedOther>
   LieGroup compose(const LieGroupBase<_DerivedOther>& m,
@@ -77,12 +76,11 @@ public:
                    OptJacobianRef J_mc_mb = {}) const;
 
   /**
-   * @brief Rotation action on a 2-vector.
-   * @param  v A 2-vector.
+   * @brief Translation action on a 2-vector.
+   * @param v A 2-vector.
    * @param[out] -optional- J_vout_m The Jacobian of the new object wrt this.
    * @param[out] -optional- J_vout_v The Jacobian of the new object wrt input object.
-   * @return The rotated 2-vector.
-   * @note See Eqs. (129, 130).
+   * @return The translated 2-vector.
    */
   template <typename _EigenDerived>
   auto
@@ -92,12 +90,12 @@ public:
   -> Eigen::Matrix<Scalar, Dim, 1>;
 
   /**
-   * @brief Get the ajoint matrix of SO2 at this.
-   * @note See Eqs. (123).
+   * @brief Get the ajoint matrix of Rn at this.
+   * @note See Eqs. (188).
    */
   Jacobian adj() const;
 
-  // SO2 specific functions
+  // Rn specific functions
 
   /**
    * @brief Get the transformation matrix (2D isometry).

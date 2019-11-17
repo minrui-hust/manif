@@ -44,7 +44,7 @@ namespace manif {
 //
 
 /**
- * @brief Represents an element of R^n.
+ * @brief Represents an element of Rn.
  */
 template <typename _Scalar, unsigned int _N>
 struct Rn : RnBase<Rn<_Scalar, _N>>
