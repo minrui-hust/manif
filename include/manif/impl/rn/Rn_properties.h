@@ -15,16 +15,16 @@ namespace internal {
 template <typename _Derived>
 struct LieGroupProperties<RnBase<_Derived>>
 {
-  // static constexpr int Dim = 1; /// @brief Space dimension
-  // static constexpr int DoF = 1; /// @brief Degrees of freedom
+  static constexpr int Dim = traits<_Derived>::Dim; /// @brief Space dimension
+  static constexpr int DoF = traits<_Derived>::Dim; /// @brief Degrees of freedom
 };
 
 //! traits specialization
 template <typename _Derived>
 struct LieGroupProperties<RnTangentBase<_Derived>>
 {
-  // static constexpr int Dim = 1; /// @brief Space dimension
-  // static constexpr int DoF = 1; /// @brief Degrees of freedom
+  static constexpr int Dim = traits<_Derived>::Dim; /// @brief Space dimension
+  static constexpr int DoF = traits<_Derived>::Dim; /// @brief Degrees of freedom
 };
 
 } // namespace internal
