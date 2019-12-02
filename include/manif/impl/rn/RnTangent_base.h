@@ -115,9 +115,7 @@ template <typename _Derived>
 typename RnTangentBase<_Derived>::LieAlg
 RnTangentBase<_Derived>::hat() const
 {
-  LieAlg t_hat = LieAlg::Constant(0);
-  t_hat.template topRightCorner<Dim, 1>() = coeffs();
-  return t_hat;
+  return coeffs();
 }
 
 template <typename _Derived>

@@ -26,7 +26,7 @@ struct traits<RnTangent<_Scalar, _N>>
   using DataType = Eigen::Matrix<Scalar, DoF, 1>;
 
   using Jacobian = Eigen::Matrix<Scalar, DoF, DoF>;
-  using LieAlg   = Eigen::Matrix<Scalar, DoF+1, DoF+1>;
+  using LieAlg   = Eigen::Matrix<Scalar, DoF, 1>;
 };
 
 } // namespace internal
