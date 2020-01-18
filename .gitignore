@@ -3,6 +3,9 @@
 .project
 .settings
 .tags
+*.swp
+*.swo
+.ycm_extra_conf.py
 build
 doc
 doxygen_warnings.txt

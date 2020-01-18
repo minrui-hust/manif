@@ -16,6 +16,23 @@ struct List {};
 template <unsigned int _id, typename... _Args>
 struct ListHelper {};
 
+template <unsigned int _id, typename _Head, typename... _Tails>
+struct ListHelper<_id, List<_Head, _Tails...>> {
+  using DataType = typename ListHelper<_id - 1, List<_Tails...>>::DataType;
+  using ListType = typename ListHelper<_id - 1, List<_Tails...>>::ListType;
+};
+
+template <typename _Head, typename... _Tails>
+struct ListHelper<0, List<_Head, _Tails...>> {
+  using DataType = Eigen::Map<_Head>;
+  using ListType = List<_Head, _Tails...>;
+};
+
+template <unsigned int _id>
+struct ListHelper<_id, List<>> {
+  static_assert(_id < 0, "Index out of bound");
+};
+
 template <typename _Head, typename... _Tails>
 struct List<_Head, _Tails...> : public List<_Tails...> {
   using Base = List<_Tails...>;
@@ -62,23 +79,6 @@ struct List<> {
   using Scalar = nulltype;
 };
 
-template <unsigned int _id, typename _Head, typename... _Tails>
-struct ListHelper<_id, List<_Head, _Tails...>> {
-  using DataType = typename ListHelper<_id - 1, List<_Tails...>>::DataType;
-  using ListType = typename ListHelper<_id - 1, List<_Tails...>>::ListType;
-};
-
-template <typename _Head, typename... _Tails>
-struct ListHelper<0, List<_Head, _Tails...>> {
-  using DataType = Eigen::Map<_Head>;
-  using ListType = List<_Head, _Tails...>;
-};
-
-template <unsigned int _id>
-struct ListHelper<_id, List<>> {
-  static_assert(_id < 0, "Index out of bound");
-};
-
 template <typename _List>
 struct LieGroupListInfo {};
 
@@ -91,7 +91,7 @@ struct LieGroupListOperation {};
 template <typename _Head, typename... _Tails>
 struct LieGroupListInfo<List<_Head, _Tails...>> {
   static constexpr unsigned int RepSize = _Head::RepSize + LieGroupListInfo<List<_Tails...>>::RepSize;
-  static constexpr unsigned int Dof = _Head::Dof + LieGroupListInfo<List<_Tails...>>::Dof;
+  static constexpr unsigned int DoF = _Head::DoF + LieGroupListInfo<List<_Tails...>>::DoF;
   static constexpr unsigned int Dim = _Head::Dim + LieGroupListInfo<List<_Tails...>>::Dim;
   static constexpr unsigned int Size = 1 + LieGroupListInfo<List<_Tails...>>::Size;
 };
@@ -99,7 +99,7 @@ struct LieGroupListInfo<List<_Head, _Tails...>> {
 template <>
 struct LieGroupListInfo<List<>> {
   static constexpr unsigned int RepSize = 0;
-  static constexpr unsigned int Dof = 0;
+  static constexpr unsigned int DoF = 0;
   static constexpr unsigned int Dim = 0;
   static constexpr unsigned int Size = 0;
 };
@@ -107,14 +107,14 @@ struct LieGroupListInfo<List<>> {
 template <unsigned int _id, typename _Head, typename... _Tails>
 struct LieGroupListElementInfo<_id, List<_Head, _Tails...>> {
   static constexpr unsigned int RepIndex = _Head::RepSize + LieGroupListElementInfo<_id - 1, List<_Tails...>>::RepIndex;
-  static constexpr unsigned int DofIndex = _Head::Dof + LieGroupListElementInfo<_id - 1, List<_Tails...>>::DofIndex;
+  static constexpr unsigned int DoFIndex = _Head::DoF + LieGroupListElementInfo<_id - 1, List<_Tails...>>::DoFIndex;
   static constexpr unsigned int DimIndex = _Head::Dim + LieGroupListElementInfo<_id - 1, List<_Tails...>>::DimIndex;
 };
 
 template <typename _Head, typename... _Tails>
 struct LieGroupListElementInfo<0, List<_Head, _Tails...>> {
   static constexpr unsigned int RepIndex = 0;
-  static constexpr unsigned int DofIndex = 0;
+  static constexpr unsigned int DoFIndex = 0;
   static constexpr unsigned int DimIndex = 0;
 };
 
@@ -130,21 +130,21 @@ struct LieGroupListOperation<List<_Head, _Tails...>> {
   using NextOperation = LieGroupListOperation<NextList>;
   using HeadOptJacobianRef = typename _Head::OptJacobianRef;
 
-  static constexpr unsigned int HeadDof = _Head::Dof;
-  static constexpr unsigned int ThisDof = LieGroupListInfo<ThisList>::Dof;
-  static constexpr unsigned int NextDof = LieGroupListInfo<NextList>::Dof;
+  static constexpr unsigned int HeadDoF = _Head::DoF;
+  static constexpr unsigned int ThisDoF = LieGroupListInfo<ThisList>::DoF;
+  static constexpr unsigned int NextDoF = LieGroupListInfo<NextList>::DoF;
 
   template <unsigned int _index = 0, typename _OptJacobianRef>
   static void BundleInverse(const ThisList& origin, ThisList& inversed, _OptJacobianRef jac_minv_m) {
     // process head
     HeadOptJacobianRef head_jac_minv_m;
     if (!jac_minv_m.empty()) {
-      head_jac_minv_m.emplace(jac_minv_m->template block<_Head::Dof, _Head::Dof>(_index, _index));
+      head_jac_minv_m.emplace(jac_minv_m->template block<_Head::DoF, _Head::DoF>(_index, _index));
     }
     inversed.head() = origin.head().inverse(head_jac_minv_m);
 
     // process tails recursively
-    NextOperation::BundleInverse<_index + HeadDof>(origin, inversed, jac_minv_m);
+    NextOperation::BundleInverse<_index + HeadDoF>(origin, inversed, jac_minv_m);
   }
 };
 
@@ -155,6 +155,15 @@ struct LieGroupListOperation<List<>> {
     // termimator
   }
 };
+
+template <typename _List>
+struct TangentListInfo {};
+
+template <unsigned int _id, typename _List>
+struct TangentListElementInfo {};
+
+template <typename _List>
+struct TangentListOperation {};
 
 }  // namespace manif
 

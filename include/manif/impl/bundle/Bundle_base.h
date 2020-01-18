@@ -1,5 +1,5 @@
-#ifndef _MANIF_MANIF_COMPOSITE_BASE_H_
-#define _MANIF_MANIF_COMPOSITE_BASE_H_
+#ifndef _MANIF_MANIF_BUNDLE_BASE_H_
+#define _MANIF_MANIF_BUNDLE_BASE_H_
 
 #include "manif/impl/bundle/Bundle_list.h"
 #include "manif/impl/bundle/Bundle_properties.h"
@@ -40,7 +40,6 @@ struct BundleBase : LieGroupBase<_Derived> {
   Jacobian adj() const;
 
   // Bundle specific API
-  BundleBase(Scalar* data) : list_(data) {}
 
   template <unsigned int _id>
   const ListElementType<_id>& get() const;
@@ -60,12 +59,13 @@ struct BundleBase : LieGroupBase<_Derived> {
   Range rep_range() const;
 
  protected:
+  ListType& list() { return static_cast<_Derived&>(*this).list(); }
 };
 
 template <typename _Derived>
 typename BundleBase<_Derived>::LieGroup BundleBase<_Derived>::inverse(OptJacobianRef J_minv_m) const {
   LieGroup inversed;
-  LieGroupListOperation<ListType>::BundleInverse((*this).list_, inversed.list_, J_minv_m);
+  LieGroupListOperation<ListType>::BundleInverse((*this).list(), inversed.list(), J_minv_m);
   return inversed;
 }
 
