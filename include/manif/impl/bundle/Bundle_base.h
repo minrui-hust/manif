@@ -7,6 +7,12 @@
 #include "manif/impl/utils.h"
 
 namespace manif {
+
+struct Range {
+  unsigned int start;
+  unsigned int size;
+};
+
 template <typename _Derived>
 struct BundleBase : LieGroupBase<_Derived> {
  private:
@@ -15,13 +21,13 @@ struct BundleBase : LieGroupBase<_Derived> {
 
   using ListType = typename internal::traits<_Derived>::ListType;
 
-  template <unsigned int _id>
-  using ListElementType = typename ListType::template ListElementType<_id>;
-
  public:
   MANIF_GROUP_TYPEDEF
   MANIF_INHERIT_GROUP_AUTO_API
   MANIF_INHERIT_GROUP_OPERATOR
+
+  template <unsigned int _id>
+  using ElementType = typename ElementInfo<_id, ListType>::Type;
 
   // LieGroup common API
   LieGroup inverse(OptJacobianRef J_minv_m = {}) const;
@@ -42,35 +48,101 @@ struct BundleBase : LieGroupBase<_Derived> {
   // Bundle specific API
 
   template <unsigned int _id>
-  const ListElementType<_id>& get() const;
+  const ElementType<_id>& get() const {
+    return list().template get<_id>();
+  }
 
   template <unsigned int _id>
-  ListElementType<_id>& get();
-
-  struct Range {
-    unsigned int start;
-    unsigned int size;
-  };
+  ElementType<_id>& get() {
+    return list().template get<_id>();
+  }
 
   template <unsigned int _id>
-  Range dof_range() const;
+  static constexpr Range DofRange() {
+    return Range{ElementInfo<_id, ListType>::DoFIndex, ElementType<_id>::DoF};
+  }
 
   template <unsigned int _id>
-  Range rep_range() const;
+  static constexpr Range RepRange() {
+    return Range{ElementInfo<_id, ListType>::RepIndex, ElementType<_id>::RepSize};
+  }
 
  protected:
   ListType& list() { return static_cast<_Derived&>(*this).list(); }
+  const ListType& list() const { return static_cast<const _Derived&>(*this).list(); }
+};
+
+template <typename _Bundle>
+struct InverseFunctor {
+  using OptJacobianRef = typename _Bundle::OptJacobianRef;
+
+  // constructor
+  InverseFunctor(_Bundle& b, OptJacobianRef& j) : bundle(b), jac(j) {}
+
+  // templated operator handle different kind of manifold element
+  template <unsigned int _id, typename _LieGroup>
+  void operator()(const _LieGroup& m) {
+    using ThisOptJacobianRef = typename _Bundle::template ElementType<_id>::OptJacobianRef;
+    static constexpr Range range = _Bundle::template DofRange<_id>();
+
+    ThisOptJacobianRef this_jac;
+    if (jac) {
+      this_jac.emplace(jac->template block<range.size, range.size>(range.start, range.start));
+    }
+
+    bundle.template get<_id>() = m.inverse(this_jac);
+  }
+
+ protected:
+  _Bundle& bundle;
+  OptJacobianRef& jac;
 };
 
 template <typename _Derived>
-typename BundleBase<_Derived>::LieGroup BundleBase<_Derived>::inverse(OptJacobianRef J_minv_m) const {
+typename BundleBase<_Derived>::LieGroup BundleBase<_Derived>::inverse(OptJacobianRef j_minv_m) const {
   LieGroup inversed;
-  LieGroupListOperation<ListType>::BundleInverse((*this).list(), inversed.list(), J_minv_m);
+  (*this).list().traverse(InverseFunctor<LieGroup>(inversed, j_minv_m));
   return inversed;
 }
 
 template <typename _Derived>
-typename BundleBase<_Derived>::Tangent BundleBase<_Derived>::log(OptJacobianRef J_t_m) const {}
+typename BundleBase<_Derived>::Tangent BundleBase<_Derived>::log(OptJacobianRef J_t_m) const {
+  // TODO
+}
+
+template <typename _OtherBundle, typename _ResultBundle>
+struct ComposeFunctor {
+  using OptJacobianRef = typename _ResultBundle::OptJacobianRef;
+
+  // constructor
+  ComposeFunctor(const _OtherBundle& other, _ResultBundle& res, OptJacobianRef& j_c_a, OptJacobianRef& j_c_b)
+      : other_(other), res_(res), jac_c_a_(j_c_a), jac_c_b_(j_c_b) {}
+
+  // templated operator handle different kind of manifold element
+  template <unsigned int _id, typename _LieGroup>
+  void operator()(const _LieGroup& m) {
+    using ThisOptJacobianRef = typename _ResultBundle::template ElementType<_id>::OptJacobianRef;
+    static constexpr Range range = _ResultBundle::template DofRange<_id>();
+
+    ThisOptJacobianRef this_jac_c_a;
+    if (jac_c_a_) {
+      this_jac_c_a.emplace(jac_c_a_->template block<range.size, range.size>(range.start, range.start));
+    }
+
+    ThisOptJacobianRef this_jac_c_b;
+    if (jac_c_b_) {
+      this_jac_c_b.emplace(jac_c_b_->template block<range.size, range.size>(range.start, range.start));
+    }
+
+    res_.template get<_id>() = m.compose(other_.template get<_id>(), this_jac_c_a, this_jac_c_b);
+  }
+
+ protected:
+  const _OtherBundle& other_;
+  _ResultBundle& res_;
+  OptJacobianRef& jac_c_a_;
+  OptJacobianRef& jac_c_b_;
+};
 
 template <typename _Derived>
 template <typename _DerivedOther>

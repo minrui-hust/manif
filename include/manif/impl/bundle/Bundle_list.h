@@ -1,13 +1,10 @@
 #ifndef _MANIF_MANIF_BUNDLE_LIST_H_
 #define _MANIF_MANIF_BUNDLE_LIST_H_
 
-#include "manif/Rn.h"
-#include "manif/SE2.h"
-#include "manif/SE3.h"
-#include "manif/SO2.h"
-#include "manif/SO3.h"
+#include <Eigen/Core>
 
 namespace manif {
+
 struct nulltype;
 
 template <typename... _Args>
@@ -16,15 +13,21 @@ struct List {};
 template <unsigned int _id, typename... _Args>
 struct ListHelper {};
 
+template <typename _List>
+struct ListInfo {};
+
+template <unsigned int _id, typename _List>
+struct ElementInfo {};
+
 template <unsigned int _id, typename _Head, typename... _Tails>
 struct ListHelper<_id, List<_Head, _Tails...>> {
-  using DataType = typename ListHelper<_id - 1, List<_Tails...>>::DataType;
+  using HeadType = typename ListHelper<_id - 1, List<_Tails...>>::HeadType;
   using ListType = typename ListHelper<_id - 1, List<_Tails...>>::ListType;
 };
 
 template <typename _Head, typename... _Tails>
 struct ListHelper<0, List<_Head, _Tails...>> {
-  using DataType = Eigen::Map<_Head>;
+  using HeadType = Eigen::Map<_Head>;
   using ListType = List<_Head, _Tails...>;
 };
 
@@ -35,27 +38,27 @@ struct ListHelper<_id, List<>> {
 
 template <typename _Head, typename... _Tails>
 struct List<_Head, _Tails...> : public List<_Tails...> {
+ private:
   using Base = List<_Tails...>;
-  using Data = Eigen::Map<_Head>;
-
-  using Scalar = typename _Head::Scalar;
-  static_assert(std::is_same<Scalar, typename Base::Scalar>::value ||
-                    std::is_same<typename Base::Scalar, nulltype>::value,
-                "Scalar mismatch in bundle");
-
-  template <unsigned int _id>
-  using ListElementType = typename ListHelper<_id, List>::DataType;
+  using Head = Eigen::Map<_Head>;
+  using Scalar = typename ListInfo<List>::Scalar;
 
   template <unsigned int _id>
   using SubListType = typename ListHelper<_id, List>::ListType;
 
   template <unsigned int _id>
-  ListElementType<_id>& get() {
+  using ElementType = typename ListHelper<_id, List>::HeadType;
+
+ public:
+  List(Scalar* data) : Base(data + _Head::RepSize), head_(data) {}
+
+  template <unsigned int _id>
+  ElementType<_id>& get() {
     return static_cast<SubListType<_id>&>(*this).head();
   }
 
   template <unsigned int _id>
-  const ListElementType<_id>& get() const {
+  const ElementType<_id>& get() const {
     return static_cast<const SubListType<_id>&>(*this).head();
   }
 
@@ -64,106 +67,85 @@ struct List<_Head, _Tails...> : public List<_Tails...> {
     static_cast<Base&>(*this).set(tails...);
   }
 
-  // the only constructor
-  List(Scalar* data) : head_(data), Base(data + _Head::RepSize) {}
+  template <unsigned int _id = 0, typename _Functor>
+  void traverse(_Functor&& func) {
+    func.template operator()<_id>(head());
+    static_cast<Base&>(*this).traverse<_id + 1>(std::forward<decltype(func)>(func));
+  }
 
-  Data& head() { return head_; }
-  const Data& head() const { return head_; }
+  template <unsigned int _id = 0, typename _Functor>
+  void traverse(_Functor&& func) const {
+    func.template operator()<_id>(head());
+    static_cast<const Base&>(*this).traverse<_id + 1>(std::forward<decltype(func)>(func));
+  }
+
+  Head& head() { return head_; }
+  const Head& head() const { return head_; }
 
  protected:
-  Data head_;
+  Head head_;
 };
 
 template <>
 struct List<> {
-  using Scalar = nulltype;
+  // terminator
+  template <typename _Scalar>
+  List(_Scalar* data) {}
+
+  // terminator
+  template <unsigned int _id = 0, typename _Functor>
+  void traverse(_Functor&&) {}
+
+  // terminator
+  template <unsigned int _id = 0, typename _Functor>
+  void traverse(_Functor&&) const {}
 };
 
-template <typename _List>
-struct LieGroupListInfo {};
-
-template <unsigned int _id, typename _List>
-struct LieGroupListElementInfo {};
-
-template <typename _List>
-struct LieGroupListOperation {};
-
 template <typename _Head, typename... _Tails>
-struct LieGroupListInfo<List<_Head, _Tails...>> {
-  static constexpr unsigned int RepSize = _Head::RepSize + LieGroupListInfo<List<_Tails...>>::RepSize;
-  static constexpr unsigned int DoF = _Head::DoF + LieGroupListInfo<List<_Tails...>>::DoF;
-  static constexpr unsigned int Dim = _Head::Dim + LieGroupListInfo<List<_Tails...>>::Dim;
-  static constexpr unsigned int Size = 1 + LieGroupListInfo<List<_Tails...>>::Size;
+struct ListInfo<List<_Head, _Tails...>> {
+  static constexpr unsigned int RepSize = _Head::RepSize + ListInfo<List<_Tails...>>::RepSize;
+  static constexpr unsigned int DoF = _Head::DoF + ListInfo<List<_Tails...>>::DoF;
+  static constexpr unsigned int Dim = _Head::Dim + ListInfo<List<_Tails...>>::Dim;
+  static constexpr unsigned int Size = 1 + ListInfo<List<_Tails...>>::Size;
+
+  using Scalar = typename _Head::Scalar;
+  static_assert(std::is_same<Scalar, typename ListInfo<List<_Tails...>>::Scalar>::value ||
+                    std::is_same<nulltype, typename ListInfo<List<_Tails...>>::Scalar>::value,
+                "Scalar type in list should be identical");
 };
 
 template <>
-struct LieGroupListInfo<List<>> {
+struct ListInfo<List<>> {
   static constexpr unsigned int RepSize = 0;
   static constexpr unsigned int DoF = 0;
   static constexpr unsigned int Dim = 0;
   static constexpr unsigned int Size = 0;
+
+  using Scalar = nulltype;
 };
 
 template <unsigned int _id, typename _Head, typename... _Tails>
-struct LieGroupListElementInfo<_id, List<_Head, _Tails...>> {
-  static constexpr unsigned int RepIndex = _Head::RepSize + LieGroupListElementInfo<_id - 1, List<_Tails...>>::RepIndex;
-  static constexpr unsigned int DoFIndex = _Head::DoF + LieGroupListElementInfo<_id - 1, List<_Tails...>>::DoFIndex;
-  static constexpr unsigned int DimIndex = _Head::Dim + LieGroupListElementInfo<_id - 1, List<_Tails...>>::DimIndex;
+struct ElementInfo<_id, List<_Head, _Tails...>> {
+  static constexpr unsigned int RepIndex = _Head::RepSize + ElementInfo<_id - 1, List<_Tails...>>::RepIndex;
+  static constexpr unsigned int DoFIndex = _Head::DoF + ElementInfo<_id - 1, List<_Tails...>>::DoFIndex;
+  static constexpr unsigned int DimIndex = _Head::Dim + ElementInfo<_id - 1, List<_Tails...>>::DimIndex;
+
+  using Type = typename ElementInfo<_id - 1, List<_Tails...>>::Type;
 };
 
 template <typename _Head, typename... _Tails>
-struct LieGroupListElementInfo<0, List<_Head, _Tails...>> {
+struct ElementInfo<0, List<_Head, _Tails...>> {
   static constexpr unsigned int RepIndex = 0;
   static constexpr unsigned int DoFIndex = 0;
   static constexpr unsigned int DimIndex = 0;
+
+  using Type = Eigen::Map<_Head>;
 };
 
 template <unsigned int _id>
-struct LieGroupListElementInfo<_id, List<>> {
+struct ElementInfo<_id, List<>> {
   static_assert(_id < 0, "Index out of bound");
 };
-
-template <typename _Head, typename... _Tails>
-struct LieGroupListOperation<List<_Head, _Tails...>> {
-  using ThisList = List<_Head, _Tails...>;
-  using NextList = List<_Tails...>;
-  using NextOperation = LieGroupListOperation<NextList>;
-  using HeadOptJacobianRef = typename _Head::OptJacobianRef;
-
-  static constexpr unsigned int HeadDoF = _Head::DoF;
-  static constexpr unsigned int ThisDoF = LieGroupListInfo<ThisList>::DoF;
-  static constexpr unsigned int NextDoF = LieGroupListInfo<NextList>::DoF;
-
-  template <unsigned int _index = 0, typename _OptJacobianRef>
-  static void BundleInverse(const ThisList& origin, ThisList& inversed, _OptJacobianRef jac_minv_m) {
-    // process head
-    HeadOptJacobianRef head_jac_minv_m;
-    if (!jac_minv_m.empty()) {
-      head_jac_minv_m.emplace(jac_minv_m->template block<_Head::DoF, _Head::DoF>(_index, _index));
-    }
-    inversed.head() = origin.head().inverse(head_jac_minv_m);
-
-    // process tails recursively
-    NextOperation::BundleInverse<_index + HeadDoF>(origin, inversed, jac_minv_m);
-  }
-};
-
-template <>
-struct LieGroupListOperation<List<>> {
-  template <unsigned int _index, typename ThisList, typename ThisOptJacobianRef>
-  static void BundleInverse(const ThisList&, ThisList&, ThisOptJacobianRef) {
-    // termimator
-  }
-};
-
-template <typename _List>
-struct TangentListInfo {};
-
-template <unsigned int _id, typename _List>
-struct TangentListElementInfo {};
-
-template <typename _List>
-struct TangentListOperation {};
 
 }  // namespace manif
 
