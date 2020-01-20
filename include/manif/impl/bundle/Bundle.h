@@ -40,7 +40,7 @@ struct traits<Bundle<_Args...>> {
 //
 
 /**
- * @brief Represents an element of SO3.
+ * @brief Represents a bundle of LieGroup elements
  */
 template <typename... _Args>
 struct Bundle : BundleBase<Bundle<_Args...>> {
