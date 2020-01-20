@@ -16,7 +16,7 @@ namespace internal {
 template <typename... _Args>
 struct traits<Bundle<_Args...>> {
   using ListType = List<_Args...>;
-  using Scalar = typename ListType::Scalar;
+  using Scalar = typename ListInfo<ListType>::Scalar;
 
   using LieGroup = Bundle<_Args...>;
   using Tangent = BundleTangent<_Args...>;
@@ -25,13 +25,13 @@ struct traits<Bundle<_Args...>> {
 
   static constexpr int Dim = LieGroupProperties<Base>::Dim;
   static constexpr int DoF = LieGroupProperties<Base>::DoF;
-  static constexpr int RepSize = LieGroupListInfo<ListType>::RepSize;
+  static constexpr int RepSize = ListInfo<ListType>::RepSize;
 
   using DataType = Eigen::Matrix<Scalar, RepSize, 1>;
 
   using Jacobian = Eigen::Matrix<Scalar, DoF, DoF>;
 
-  using Vector = Eigen::Matrix<Scalar, DoF, 1>;
+  using Vector = Eigen::Matrix<Scalar, Dim, 1>;
 };
 } /* namespace internal */
 
@@ -53,8 +53,7 @@ struct Bundle : BundleBase<Bundle<_Args...>> {
   MANIF_COMPLETE_GROUP_TYPEDEF
   MANIF_INHERIT_GROUP_API
 
-  Bundle() = default;
-  ~Bundle() = default;
+  Bundle();
 
   // Copy constructor
   Bundle(const Bundle& o);
@@ -77,11 +76,19 @@ struct Bundle : BundleBase<Bundle<_Args...>> {
  protected:
   friend struct LieGroupBase<Bundle<_Args...>>;
   DataType& coeffs_nonconst();
+
+  friend Base;
+  const ListType& list() const;
   ListType& list();
 
   DataType data_;
   ListType list_;
 };
+
+template <typename... _Args>
+Bundle<_Args...>::Bundle() : data_(), list_(data_.data()) {
+  //
+}
 
 template <typename... _Args>
 template <typename _EigenDerived>
@@ -123,6 +130,11 @@ typename Bundle<_Args...>::DataType& Bundle<_Args...>::coeffs_nonconst() {
 
 template <typename... _Args>
 typename Bundle<_Args...>::ListType& Bundle<_Args...>::list() {
+  return list_;
+}
+
+template <typename... _Args>
+const typename Bundle<_Args...>::ListType& Bundle<_Args...>::list() const {
   return list_;
 }
 

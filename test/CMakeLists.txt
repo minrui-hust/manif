@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.8)
 
-find_package(GTest QUIET)
+#find_package(GTest QUIET)
 
 if(NOT GTEST_FOUND)
   # If not found, download it

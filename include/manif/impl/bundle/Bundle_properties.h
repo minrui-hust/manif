@@ -24,27 +24,27 @@ namespace internal {
 //! traits specialization
 template <typename... _Args>
 struct LieGroupProperties<BundleBase<Bundle<_Args...>>> {
-  static constexpr int Dim = LieGroupListInfo<List<_Args...>>::Dim;  /// @brief Space dimension
-  static constexpr int DoF = LieGroupListInfo<List<_Args...>>::DoF;  /// @brief Degrees of freedom
+  static constexpr int Dim = ListInfo<List<_Args...>>::Dim;  /// @brief Space dimension
+  static constexpr int DoF = ListInfo<List<_Args...>>::DoF;  /// @brief Degrees of freedom
 };
 
 template <typename... _Args>
 struct LieGroupProperties<BundleBase<Eigen::Map<Bundle<_Args...>>>> {
-  static constexpr int Dim = LieGroupListInfo<List<_Args...>>::Dim;  /// @brief Space dimension
-  static constexpr int DoF = LieGroupListInfo<List<_Args...>>::DoF;  /// @brief Degrees of freedom
+  static constexpr int Dim = ListInfo<List<_Args...>>::Dim;  /// @brief Space dimension
+  static constexpr int DoF = ListInfo<List<_Args...>>::DoF;  /// @brief Degrees of freedom
 };
 
 //! traits specialization
 template <typename... _Args>
 struct LieGroupProperties<BundleTangentBase<BundleTangent<_Args...>>> {
-  static constexpr int Dim = TangentListInfo<List<_Args...>>::Dim;  /// @brief Space dimension
-  static constexpr int DoF = TangentListInfo<List<_Args...>>::DoF;  /// @brief Degrees of freedom
+  static constexpr int Dim = ListInfo<List<_Args...>>::Dim;  /// @brief Space dimension
+  static constexpr int DoF = ListInfo<List<_Args...>>::DoF;  /// @brief Degrees of freedom
 };
 
 template <typename... _Args>
 struct LieGroupProperties<BundleTangentBase<Eigen::Map<BundleTangent<_Args...>>>> {
-  static constexpr int Dim = TangentListInfo<List<_Args...>>::Dim;  /// @brief Space dimension
-  static constexpr int DoF = TangentListInfo<List<_Args...>>::DoF;  /// @brief Degrees of freedom
+  static constexpr int Dim = ListInfo<List<_Args...>>::Dim;  /// @brief Space dimension
+  static constexpr int DoF = ListInfo<List<_Args...>>::DoF;  /// @brief Degrees of freedom
 };
 
 }  // namespace internal
