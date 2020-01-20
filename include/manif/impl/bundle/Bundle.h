@@ -23,8 +23,8 @@ struct traits<Bundle<_Args...>> {
 
   using Base = BundleBase<Bundle<_Args...>>;
 
-  static constexpr int Dim = LieGroupProperties<Base>::Dim;
-  static constexpr int DoF = LieGroupProperties<Base>::DoF;
+  static constexpr int Dim = ListInfo<ListType>::Dim;
+  static constexpr int DoF = ListInfo<ListType>::DoF;
   static constexpr int RepSize = ListInfo<ListType>::RepSize;
 
   using DataType = Eigen::Matrix<Scalar, RepSize, 1>;

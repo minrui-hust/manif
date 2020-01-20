@@ -22,29 +22,17 @@ struct BundleTangentBase;
 namespace internal {
 
 //! traits specialization
-template <typename... _Args>
-struct LieGroupProperties<BundleBase<Bundle<_Args...>>> {
-  static constexpr int Dim = ListInfo<List<_Args...>>::Dim;  /// @brief Space dimension
-  static constexpr int DoF = ListInfo<List<_Args...>>::DoF;  /// @brief Degrees of freedom
-};
-
-template <typename... _Args>
-struct LieGroupProperties<BundleBase<Eigen::Map<Bundle<_Args...>>>> {
-  static constexpr int Dim = ListInfo<List<_Args...>>::Dim;  /// @brief Space dimension
-  static constexpr int DoF = ListInfo<List<_Args...>>::DoF;  /// @brief Degrees of freedom
+template <typename _Derived>
+struct LieGroupProperties<BundleBase<_Derived>> {
+  static constexpr int Dim = traits<_Derived>::Dim;  /// @brief Space dimension
+  static constexpr int DoF = traits<_Derived>::DoF;  /// @brief Degrees of freedom
 };
 
 //! traits specialization
-template <typename... _Args>
-struct LieGroupProperties<BundleTangentBase<BundleTangent<_Args...>>> {
-  static constexpr int Dim = ListInfo<List<_Args...>>::Dim;  /// @brief Space dimension
-  static constexpr int DoF = ListInfo<List<_Args...>>::DoF;  /// @brief Degrees of freedom
-};
-
-template <typename... _Args>
-struct LieGroupProperties<BundleTangentBase<Eigen::Map<BundleTangent<_Args...>>>> {
-  static constexpr int Dim = ListInfo<List<_Args...>>::Dim;  /// @brief Space dimension
-  static constexpr int DoF = ListInfo<List<_Args...>>::DoF;  /// @brief Degrees of freedom
+template <typename _Derived>
+struct LieGroupProperties<BundleTangentBase<_Derived>> {
+  static constexpr int Dim = traits<_Derived>::Dim;  /// @brief Space dimension
+  static constexpr int DoF = traits<_Derived>::DoF;  /// @brief Degrees of freedom
 };
 
 }  // namespace internal
