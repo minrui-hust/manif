@@ -31,7 +31,7 @@ struct traits<Bundle<_Args...>> {
 
   using Jacobian = Eigen::Matrix<Scalar, DoF, DoF>;
 
-  using Vector = Eigen::Matrix<Scalar, DoF, 1>;
+  using Vector = Eigen::Matrix<Scalar, Dim, 1>;
 };
 } /* namespace internal */
 

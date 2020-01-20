@@ -177,7 +177,7 @@ struct GeneratorEvaluator<RnTangentBase<Derived>>
 
     LieAlg Ei = LieAlg::Constant(0);
 
-    Ei(i, RnTangentBase<Derived>::DoF) = 1;
+    Ei(i) = 1;
 
     return Ei;
   }

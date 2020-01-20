@@ -92,6 +92,9 @@ struct List<> {
   template <typename _Scalar>
   List(_Scalar* data) {}
 
+  // teminator
+  void set() {}
+
   // terminator
   template <unsigned int _id = 0, typename _Functor>
   void traverse(_Functor&&) {}
