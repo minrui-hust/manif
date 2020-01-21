@@ -8,11 +8,6 @@
 
 namespace manif {
 
-struct Range {
-  unsigned int start;
-  unsigned int size;
-};
-
 template <typename _Derived>
 struct BundleBase : LieGroupBase<_Derived> {
  private:
@@ -25,13 +20,6 @@ struct BundleBase : LieGroupBase<_Derived> {
   MANIF_GROUP_TYPEDEF
   MANIF_INHERIT_GROUP_AUTO_API
   MANIF_INHERIT_GROUP_OPERATOR
-
-  /**
-   * @brief Get the type of the component in Bundle
-   * @tparam _id The component to get
-   */
-  template <unsigned int _id>
-  using ElementType = typename ElementInfo<_id, ListType>::Type;
 
   // LieGroup common API
 
@@ -77,6 +65,13 @@ struct BundleBase : LieGroupBase<_Derived> {
   Jacobian adj() const;
 
   // Bundle specific functions
+
+  /**
+   * @brief Get the type of the component in Bundle
+   * @tparam _id The component to get
+   */
+  template <unsigned int _id>
+  using ElementType = typename ElementInfo<_id, ListType>::Type;
 
   /**
    * @brief Get the component in Bundle, mutable version

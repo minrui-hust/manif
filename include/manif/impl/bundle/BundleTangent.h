@@ -26,6 +26,7 @@ struct traits<BundleTangent<_Args...>> {
   using DataType = Eigen::Matrix<Scalar, RepSize, 1>;
 
   using Jacobian = Eigen::Matrix<Scalar, DoF, DoF>;
+
   using LieAlg = BundleLieAlg<_Args...>;
 };
 }  // namespace internal
@@ -38,6 +39,7 @@ struct BundleTangent : BundleTangentBase<BundleTangent<_Args...>> {
  private:
   using Base = BundleTangentBase<BundleTangent<_Args...>>;
   using Type = BundleTangent<_Args...>;
+  using ListType = List<_Args...>;
 
  public:
   MANIF_TANGENT_TYPEDEF
@@ -64,7 +66,11 @@ struct BundleTangent : BundleTangentBase<BundleTangent<_Args...>> {
   const DataType& coeffs() const;
 
  protected:
+  const ListType& list() const;
+  ListType& list();
+
   DataType data_;
+  ListType list_;
 };
 
 template <typename... _Args>

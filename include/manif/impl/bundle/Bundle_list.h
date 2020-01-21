@@ -7,6 +7,11 @@ namespace manif {
 
 struct nulltype;
 
+struct Range {
+  unsigned int start;
+  unsigned int size;
+};
+
 template <typename... _Args>
 struct List {};
 
