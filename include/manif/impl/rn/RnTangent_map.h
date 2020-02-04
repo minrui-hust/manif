@@ -13,6 +13,7 @@ struct traits< Eigen::Map<RnTangent<_Scalar, _N>,0> >
 {
   using typename traits<RnTangent<_Scalar, _N>>::Scalar;
   using traits<RnTangent<_Scalar, _N>>::DoF;
+  using Base = RnTangentBase<Eigen::Map<RnTangent<_Scalar, _N>, 0> >;
   using DataType = ::Eigen::Map<Eigen::Matrix<Scalar, DoF, 1>, 0>;
 };
 
@@ -23,6 +24,7 @@ struct traits< Eigen::Map<const RnTangent<_Scalar, _N>,0> >
 {
   using typename traits<const RnTangent<_Scalar, _N>>::Scalar;
   using traits<const RnTangent<_Scalar, _N>>::DoF;
+  using Base = RnTangentBase<Eigen::Map<const RnTangent<_Scalar, _N>, 0> >;
   using DataType = ::Eigen::Map<const Eigen::Matrix<Scalar, DoF, 1>, 0>;
 };
 

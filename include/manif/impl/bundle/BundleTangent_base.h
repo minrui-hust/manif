@@ -127,6 +127,8 @@ struct BundleTangentBase : TangentBase<_Derived> {
   }
 
  protected:
+  friend internal::RandomEvaluatorImpl<BundleTangentBase>;
+
   // Get the underlying list storage, which is a member of derived struct
   ListType& list() { return static_cast<_Derived&>(*this).list(); }                    // mutable version
   const ListType& list() const { return static_cast<const _Derived&>(*this).list(); }  // const version
@@ -135,6 +137,7 @@ struct BundleTangentBase : TangentBase<_Derived> {
 template <typename _BundleTangent>
 struct HatFunctor {
   using LieAlg = typename _BundleTangent::LieAlg;
+
   HatFunctor(LieAlg& alg) : alg_(alg) {}
 
   template <unsigned int _id, typename _Tangent>
@@ -143,7 +146,7 @@ struct HatFunctor {
   }
 
  protected:
-  LieAlg alg_;
+  LieAlg& alg_;
 };
 
 template <typename _Derived>
@@ -152,6 +155,182 @@ typename BundleTangentBase<_Derived>::LieAlg BundleTangentBase<_Derived>::hat() 
   (*this).list().traverse(HatFunctor<_Derived>(alg));
   return alg;
 }
+
+template <typename _BundleTangent>
+struct ExpFunctor {
+  using LieGroup = typename _BundleTangent::LieGroup;
+  using OptJacobianRef = typename _BundleTangent::OptJacobianRef;
+
+  ExpFunctor(LieGroup& bundle, OptJacobianRef& jac) : bundle_(bundle), jac_(jac) {}
+
+  template <unsigned int _id, typename _Tangent>
+  void operator()(const _Tangent& tangent) {
+    using ThisOptJacobianRef = typename _Tangent::OptJacobianRef;
+    static constexpr Range range = _BundleTangent::template DofRange<_id>();
+
+    ThisOptJacobianRef this_jac;
+    if (jac_) {
+      this_jac.emplace(jac_->template block<range.size, range.size>(range.start, range.start));
+    }
+
+    bundle_.template get<_id>() = tangent.exp(this_jac);
+  }
+
+ protected:
+  LieGroup& bundle_;
+  OptJacobianRef& jac_;
+};
+
+template <typename _Derived>
+typename BundleTangentBase<_Derived>::LieGroup BundleTangentBase<_Derived>::exp(OptJacobianRef j_m_t) const {
+  if (j_m_t) j_m_t->setZero();
+
+  LieGroup bundle;
+  (*this).list().traverse(ExpFunctor<_Derived>(bundle, j_m_t));
+  return bundle;
+}
+
+template <typename _BundleTangent>
+struct RjacFunctor {
+  using Jacobian = typename _BundleTangent::Jacobian;
+
+  RjacFunctor(Jacobian& jac) : jac_(jac) {}
+
+  template <unsigned int _id, typename _Tangent>
+  void operator()(const _Tangent& tangent) {
+    static constexpr Range range = _BundleTangent::template DofRange<_id>();
+
+    jac_.template block<range.size, range.size>(range.start, range.start) = tangent.rjac();
+  }
+
+ protected:
+  Jacobian& jac_;
+};
+
+template <typename _Derived>
+typename BundleTangentBase<_Derived>::Jacobian BundleTangentBase<_Derived>::rjac() const {
+  Jacobian jac;
+  (*this).list().traverse(RjacFunctor<_Derived>(jac));
+  return jac;
+}
+
+template <typename _BundleTangent>
+struct LjacFunctor {
+  using Jacobian = typename _BundleTangent::Jacobian;
+
+  LjacFunctor(Jacobian& jac) : jac_(jac) {}
+
+  template <unsigned int _id, typename _Tangent>
+  void operator()(const _Tangent& tangent) {
+    static constexpr Range range = _BundleTangent::template DofRange<_id>();
+
+    jac_.template block<range.size, range.size>(range.start, range.start) = tangent.ljac();
+  }
+
+ protected:
+  Jacobian& jac_;
+};
+
+template <typename _Derived>
+typename BundleTangentBase<_Derived>::Jacobian BundleTangentBase<_Derived>::ljac() const {
+  Jacobian jac;
+  (*this).list().traverse(LjacFunctor<_Derived>(jac));
+  return jac;
+}
+
+template <typename _BundleTangent>
+struct RjacInvFunctor {
+  using Jacobian = typename _BundleTangent::Jacobian;
+
+  RjacInvFunctor(Jacobian& jac) : jac_(jac) {}
+
+  template <unsigned int _id, typename _Tangent>
+  void operator()(const _Tangent& tangent) {
+    static constexpr Range range = _BundleTangent::template DofRange<_id>();
+
+    jac_.template block<range.size, range.size>(range.start, range.start) = tangent.rjacinv();
+  }
+
+ protected:
+  Jacobian& jac_;
+};
+
+template <typename _Derived>
+typename BundleTangentBase<_Derived>::Jacobian BundleTangentBase<_Derived>::rjacinv() const {
+  Jacobian jac;
+  (*this).list().traverse(RjacInvFunctor<_Derived>(jac));
+  return jac;
+}
+
+template <typename _BundleTangent>
+struct LjacInvFunctor {
+  using Jacobian = typename _BundleTangent::Jacobian;
+
+  LjacInvFunctor(Jacobian& jac) : jac_(jac) {}
+
+  template <unsigned int _id, typename _Tangent>
+  void operator()(const _Tangent& tangent) {
+    static constexpr Range range = _BundleTangent::template DofRange<_id>();
+
+    jac_.template block<range.size, range.size>(range.start, range.start) = tangent.ljacinv();
+  }
+
+ protected:
+  Jacobian& jac_;
+};
+
+template <typename _Derived>
+typename BundleTangentBase<_Derived>::Jacobian BundleTangentBase<_Derived>::ljacinv() const {
+  Jacobian jac;
+  (*this).list().traverse(LjacInvFunctor<_Derived>(jac));
+  return jac;
+}
+
+template <typename _BundleTangent>
+struct SmallAdjFunctor {
+  using Jacobian = typename _BundleTangent::Jacobian;
+
+  SmallAdjFunctor(Jacobian& jac) : jac_(jac) {}
+
+  template <unsigned int _id, typename _Tangent>
+  void operator()(const _Tangent& tangent) {
+    static constexpr Range range = _BundleTangent::template DofRange<_id>();
+
+    jac_.template block<range.size, range.size>(range.start, range.start) = tangent.smallAdj();
+  }
+
+ protected:
+  Jacobian& jac_;
+};
+
+template <typename _Derived>
+typename BundleTangentBase<_Derived>::Jacobian BundleTangentBase<_Derived>::smallAdj() const {
+  Jacobian jac;
+  (*this).list().traverse(SmallAdjFunctor<_Derived>(jac));
+  return jac;
+}
+
+//
+namespace internal {
+
+//! @brief Random specialization for BundleTangentBase objects.
+
+template <typename _Derived>
+struct RandomEvaluatorImpl<BundleTangentBase<_Derived>> {
+  using Base = BundleTangentBase<_Derived>;
+
+  struct RandomFunctor {
+    // Templated operator handle different kind of manifold element
+    template <unsigned int _id, typename _Tangent>
+    void operator()(_Tangent& t) {
+      t.setRandom();
+    }
+  };
+
+  static void run(Base& t) { t.list().traverse(RandomFunctor()); }
+};
+
+} /* namespace internal */
 
 }  // namespace manif
 

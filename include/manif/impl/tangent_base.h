@@ -339,6 +339,13 @@ private:
 };
 
 template <typename _Derived>
+constexpr int TangentBase<_Derived>::Dim;
+template <typename _Derived>
+constexpr int TangentBase<_Derived>::DoF;
+template <typename _Derived>
+constexpr int TangentBase<_Derived>::RepSize;
+
+template <typename _Derived>
 typename TangentBase<_Derived>::DataType&
 TangentBase<_Derived>::coeffs()
 {

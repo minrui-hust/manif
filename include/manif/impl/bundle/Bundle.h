@@ -15,7 +15,7 @@ namespace internal {
 //! Traits specialization
 template <typename... _Args>
 struct traits<Bundle<_Args...>> {
-  using ListType = List<_Args...>;
+  using ListType = LieGroupList<_Args...>;
   using Scalar = typename ListInfo<ListType>::Scalar;
 
   using LieGroup = Bundle<_Args...>;
@@ -47,9 +47,11 @@ struct Bundle : BundleBase<Bundle<_Args...>> {
  private:
   using Base = BundleBase<Bundle<_Args...>>;
   using Type = Bundle<_Args...>;
-  using ListType = List<_Args...>;
+  using ListType = LieGroupList<_Args...>;
 
  public:
+  MANIF_MAKE_ALIGNED_OPERATOR_NEW_COND
+
   MANIF_COMPLETE_GROUP_TYPEDEF
   MANIF_INHERIT_GROUP_API
 

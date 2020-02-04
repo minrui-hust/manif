@@ -43,7 +43,38 @@ TEST(TEST_BUNDLE, TEST_BUNDLE_INVERSE) {
 
     EXPECT_EIGEN_NEAR(bundle_jac, predict_jac);
 
-    b = TestBundle(SO3d::Random(), R3d::Random());
+    b.setRandom();
+  }
+}
+
+TEST(TEST_BUNDLE, TEST_BUNDLE_LOG) {
+  using TestBundle = Bundle<SO3d, R3d>;
+  using BundleJacobian = TestBundle::Jacobian;
+
+  TestBundle b(SO3d(0, 0, 0.6, 0.8), R3d(Eigen::Vector3d(1, 2, 3)));
+
+  for (int i = 0; i < 10; ++i) {
+    BundleJacobian bundle_jac;
+    bundle_jac.setRandom();
+    TestBundle::Tangent b_tangent;
+    b_tangent = b.log(bundle_jac);
+
+    SO3d::Jacobian so3_jac;
+    R3d::Jacobian r3_jac;
+    SO3d::Tangent so3_tangent = b.get<0>().log(so3_jac);
+    R3d::Tangent r3_tangent = b.get<1>().log(r3_jac);
+
+    EXPECT_EIGEN_NEAR(b_tangent.get<0>().coeffs(), so3_tangent.coeffs());
+    EXPECT_EIGEN_NEAR(b_tangent.get<1>().coeffs(), r3_tangent.coeffs());
+
+    BundleJacobian predict_jac;
+    predict_jac.setZero();
+    predict_jac.block<3, 3>(0, 0) = so3_jac;
+    predict_jac.block<3, 3>(3, 3) = r3_jac;
+
+    EXPECT_EIGEN_NEAR(bundle_jac, predict_jac);
+
+    b.setRandom();
   }
 }
 
@@ -83,8 +114,8 @@ TEST(TEST_BUNDLE, TEST_BUNDLE_COMPOSE) {
     EXPECT_EIGEN_NEAR(bundle_jac_a, predict_jac_a);
     EXPECT_EIGEN_NEAR(bundle_jac_b, predict_jac_b);
 
-    a = TestBundle(SO3d::Random(), R3d::Random());
-    b = TestBundle(SO3d::Random(), R3d::Random());
+    a.setRandom();
+    b.setRandom();
   }
 }
 
@@ -135,8 +166,8 @@ TEST(TEST_BUNDLE, TEST_BUNDLE_ACT) {
     EXPECT_EIGEN_NEAR(bundle_jac_m, predict_jac_m);
     EXPECT_EIGEN_NEAR(bundle_jac_v, predict_jac_v);
 
-    b = TestBundle(SO2d::Random(), R2d::Random());
-    v = Eigen::Matrix<double, 4, 1>::Random();
+    b.setRandom();
+    v.setRandom();
   }
 }
 
@@ -159,7 +190,7 @@ TEST(TEST_BUNDLE, TEST_BUNDLE_ADJ) {
 
     EXPECT_EIGEN_NEAR(bundle_jac, predict_jac);
 
-    b = TestBundle(SO3d::Random(), R3d::Random());
+    b.setRandom();
   }
 }
 

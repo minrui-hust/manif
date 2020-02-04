@@ -13,6 +13,7 @@ struct traits< Eigen::Map<SE3Tangent<_Scalar>,0> >
 {
   using typename traits<SE3Tangent<_Scalar>>::Scalar;
   using traits<SE3Tangent<_Scalar>>::DoF;
+  using Base = SE3TangentBase<Eigen::Map<SE3Tangent<_Scalar>, 0> >;
   using DataType = Eigen::Map<Eigen::Matrix<Scalar, DoF, 1>, 0>;
 };
 
@@ -23,6 +24,7 @@ struct traits< Eigen::Map<const SE3Tangent<_Scalar>,0> >
 {
   using typename traits<const SE3Tangent<_Scalar>>::Scalar;
   using traits<const SE3Tangent<_Scalar>>::DoF;
+  using Base = SE3TangentBase<Eigen::Map<const SE3Tangent<_Scalar>, 0> >;
   using DataType = Eigen::Map<const Eigen::Matrix<Scalar, DoF, 1>, 0>;
 };
 

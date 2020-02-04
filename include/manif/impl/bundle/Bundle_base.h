@@ -12,8 +12,6 @@ template <typename _Derived>
 struct BundleBase : LieGroupBase<_Derived> {
  private:
   using Base = LieGroupBase<_Derived>;
-  using Type = BundleBase<_Derived>;
-
   using ListType = typename internal::traits<_Derived>::ListType;
 
  public:
@@ -124,6 +122,8 @@ struct BundleBase : LieGroupBase<_Derived> {
   }
 
  protected:
+  friend internal::RandomEvaluatorImpl<BundleBase>;
+
   // Get the underlying list storage, which is a member of derived struct
   ListType& list() { return static_cast<_Derived&>(*this).list(); }                    // mutable version
   const ListType& list() const { return static_cast<const _Derived&>(*this).list(); }  // const version
@@ -163,9 +163,39 @@ typename BundleBase<_Derived>::LieGroup BundleBase<_Derived>::inverse(OptJacobia
   return inversed;
 }
 
+template <typename _Bundle>
+struct LogFunctor {
+  using Tangent = typename _Bundle::Tangent;
+  using OptJacobianRef = typename _Bundle::OptJacobianRef;
+
+  // constructor
+  LogFunctor(Tangent& res, OptJacobianRef& jac) : res_(res), jac_(jac) {}
+
+  // templated operator handle different kind of manifold element
+  template <unsigned int _id, typename _LieGroup>
+  void operator()(const _LieGroup& m) {
+    using ThisOptJacobianRef = typename _Bundle::template ElementType<_id>::OptJacobianRef;
+    static constexpr Range range = _Bundle::template DofRange<_id>();
+
+    ThisOptJacobianRef this_jac;
+    if (jac_) {
+      this_jac.emplace(jac_->template block<range.size, range.size>(range.start, range.start));
+    }
+
+    res_.template get<_id>() = m.log(this_jac);
+  }
+
+ protected:
+  Tangent& res_;
+  OptJacobianRef& jac_;
+};
+
 template <typename _Derived>
 typename BundleBase<_Derived>::Tangent BundleBase<_Derived>::log(OptJacobianRef j_t_m) const {
-  // TODO
+  if (j_t_m) j_t_m->setZero();
+  Tangent tangent;
+  (*this).list().traverse(LogFunctor<LieGroup>(tangent, j_t_m));
+  return tangent;
 }
 
 template <typename _OtherBundle, typename _ResultBundle>
@@ -292,6 +322,28 @@ typename BundleBase<_Derived>::Jacobian BundleBase<_Derived>::adj() const {
   (*this).list().traverse(AdjFunctor<_Derived>(jac));
   return jac;
 }
+
+//
+namespace internal {
+
+//! @brief Random specialization for BundleBase objects.
+
+template <typename _Derived>
+struct RandomEvaluatorImpl<BundleBase<_Derived>> {
+  using Base = BundleBase<_Derived>;
+
+  struct RandomFunctor {
+    // Templated operator handle different kind of manifold element
+    template <unsigned int _id, typename _LieGroup>
+    void operator()(_LieGroup& m) {
+      m.setRandom();
+    }
+  };
+
+  static void run(Base& m) { m.list().traverse(RandomFunctor()); }
+};
+
+} /* namespace internal */
 
 }  // namespace manif
 

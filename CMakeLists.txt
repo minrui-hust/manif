@@ -88,6 +88,8 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     -Wno-sign-compare
     -Wno-unused-parameter
     -Wno-missing-field-initializers
+    -Wno-unused-but-set-variable
+    -g
   )
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
   target_compile_options(${PROJECT_NAME} INTERFACE /bigobj)

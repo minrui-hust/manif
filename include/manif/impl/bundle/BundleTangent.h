@@ -2,7 +2,7 @@
 #define _MANIF_MANIF_BUNDLETANGENT_H_
 
 #include <Eigen/Core>
-#include "manif/impl/bundle/BundleLieAlg.h"
+#include <iostream>
 #include "manif/impl/bundle/BundleTangent_base.h"
 
 namespace manif {
@@ -11,7 +11,7 @@ namespace internal {
 //! Traits specialization
 template <typename... _Args>
 struct traits<BundleTangent<_Args...>> {
-  using ListType = List<_Args...>;
+  using ListType = TangentList<_Args...>;
   using Scalar = typename ListInfo<ListType>::Scalar;
 
   using LieGroup = Bundle<_Args...>;
@@ -27,7 +27,7 @@ struct traits<BundleTangent<_Args...>> {
 
   using Jacobian = Eigen::Matrix<Scalar, DoF, DoF>;
 
-  using LieAlg = BundleLieAlg<_Args...>;
+  using LieAlg = LieAlgList<_Args...>;
 };
 }  // namespace internal
 
@@ -38,19 +38,20 @@ template <typename... _Args>
 struct BundleTangent : BundleTangentBase<BundleTangent<_Args...>> {
  private:
   using Base = BundleTangentBase<BundleTangent<_Args...>>;
-  using Type = BundleTangent<_Args...>;
-  using ListType = List<_Args...>;
+  using ListType = TangentList<_Args...>;
 
  public:
+  MANIF_MAKE_ALIGNED_OPERATOR_NEW_COND
+
   MANIF_TANGENT_TYPEDEF
   MANIF_INHERIT_TANGENT_API
   MANIF_INHERIT_TANGENT_OPERATOR
 
-  BundleTangent() = default;
-  ~BundleTangent() = default;
+  BundleTangent();
 
-  // Copy constructor given base
-  BundleTangent(const Base& o);
+  // Copy constructor
+  BundleTangent(const BundleTangent& o);
+
   template <typename _DerivedOther>
   BundleTangent(const BundleTangentBase<_DerivedOther>& o);
 
@@ -61,11 +62,16 @@ struct BundleTangent : BundleTangentBase<BundleTangent<_Args...>> {
   template <typename _EigenDerived>
   BundleTangent(const Eigen::MatrixBase<_EigenDerived>& v);
 
+  // Copy constructor given a list of LieGroup elements
+  template <typename... _Others>
+  BundleTangent(const _Others&... others);
+
   // Tangent common API
   DataType& coeffs();
   const DataType& coeffs() const;
 
  protected:
+  friend Base;
   const ListType& list() const;
   ListType& list();
 
@@ -74,25 +80,30 @@ struct BundleTangent : BundleTangentBase<BundleTangent<_Args...>> {
 };
 
 template <typename... _Args>
-BundleTangent<_Args...>::BundleTangent(const Base& o) : data_(o.coeffs()) {
+BundleTangent<_Args...>::BundleTangent() : list_(data_.data()) {
+  //
+}
+
+template <typename... _Args>
+BundleTangent<_Args...>::BundleTangent(const BundleTangent& o) : BundleTangent(o.coeffs()) {
   //
 }
 
 template <typename... _Args>
 template <typename _DerivedOther>
-BundleTangent<_Args...>::BundleTangent(const BundleTangentBase<_DerivedOther>& o) : data_(o.coeffs()) {
+BundleTangent<_Args...>::BundleTangent(const BundleTangentBase<_DerivedOther>& o) : BundleTangent(o.coeffs()) {
   //
 }
 
 template <typename... _Args>
 template <typename _DerivedOther>
-BundleTangent<_Args...>::BundleTangent(const TangentBase<_DerivedOther>& o) : data_(o.coeffs()) {
+BundleTangent<_Args...>::BundleTangent(const TangentBase<_DerivedOther>& o) : BundleTangent(o.coeffs()) {
   //
 }
 
 template <typename... _Args>
 template <typename _EigenDerived>
-BundleTangent<_Args...>::BundleTangent(const Eigen::MatrixBase<_EigenDerived>& v) : data_(v) {
+BundleTangent<_Args...>::BundleTangent(const Eigen::MatrixBase<_EigenDerived>& v) : data_(v), list_(data_.data()) {
   //
 }
 
@@ -104,6 +115,16 @@ typename BundleTangent<_Args...>::DataType& BundleTangent<_Args...>::coeffs() {
 template <typename... _Args>
 const typename BundleTangent<_Args...>::DataType& BundleTangent<_Args...>::coeffs() const {
   return data_;
+}
+
+template <typename... _Args>
+typename BundleTangent<_Args...>::ListType& BundleTangent<_Args...>::list() {
+  return list_;
+}
+
+template <typename... _Args>
+const typename BundleTangent<_Args...>::ListType& BundleTangent<_Args...>::list() const {
+  return list_;
 }
 
 }  // namespace manif
