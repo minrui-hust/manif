@@ -104,6 +104,11 @@ public:
    */
   Transformation transform() const;
 
+  /**
+   * @brief assign an eigen vector to Rn
+   */
+  template<typename _EigenDerived>
+  _Derived& operator =(const Eigen::MatrixBase<_EigenDerived>& v);
 
 protected:
 
@@ -117,6 +122,14 @@ RnBase<_Derived>::transform() const
   Transformation T(Transformation::Identity());
   T.template topRightCorner<Dim,1>() = coeffs();
   return T;
+}
+
+template<typename _Derived>
+template<typename _EigenDerived>
+_Derived& RnBase<_Derived>::operator =(const Eigen::MatrixBase<_EigenDerived>& v)
+{
+  coeffs_nonconst() = v;
+  return static_cast<_Derived&>(*this);
 }
 
 template <typename _Derived>

@@ -46,13 +46,13 @@ class Map<manif::Bundle<_Args...>, 0> : public manif::BundleBase<Map<manif::Bund
 
   const DataType& coeffs() const { return data_; }
 
+  const ListType& list() const { return list_; }
+
+  ListType& list() { return list_; }
+
  protected:
   friend struct manif::LieGroupBase<Map<manif::Bundle<_Args...>, 0>>;
   DataType& coeffs_nonconst() { return data_; }
-
-  friend Base;
-  const ListType& list() const { return list_; }
-  ListType& list() { return list_; }
 
   DataType data_;
   ListType list_;
@@ -75,10 +75,9 @@ class Map<const manif::Bundle<_Args...>, 0> : public manif::BundleBase<Map<const
 
   const DataType& coeffs() const { return data_; }
 
- protected:
-  friend Base;
   const ListType& list() const { return list_; }
 
+ protected:
   const DataType data_;
   const ListType list_;
 };

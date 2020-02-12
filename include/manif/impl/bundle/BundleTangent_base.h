@@ -21,6 +21,8 @@ struct BundleTangentBase : TangentBase<_Derived> {
   MANIF_TANGENT_TYPEDEF
   MANIF_INHERIT_TANGENT_OPERATOR
 
+  static constexpr int Size = internal::traits<_Derived>::Size;
+
   // Tangent common API
 
   using Base::coeffs;
@@ -210,7 +212,10 @@ struct RjacFunctor {
 template <typename _Derived>
 typename BundleTangentBase<_Derived>::Jacobian BundleTangentBase<_Derived>::rjac() const {
   Jacobian jac;
+  jac.setZero();
+
   (*this).list().traverse(RjacFunctor<_Derived>(jac));
+
   return jac;
 }
 
@@ -234,7 +239,10 @@ struct LjacFunctor {
 template <typename _Derived>
 typename BundleTangentBase<_Derived>::Jacobian BundleTangentBase<_Derived>::ljac() const {
   Jacobian jac;
+  jac.setZero();
+
   (*this).list().traverse(LjacFunctor<_Derived>(jac));
+
   return jac;
 }
 
@@ -258,7 +266,10 @@ struct RjacInvFunctor {
 template <typename _Derived>
 typename BundleTangentBase<_Derived>::Jacobian BundleTangentBase<_Derived>::rjacinv() const {
   Jacobian jac;
+  jac.setZero();
+
   (*this).list().traverse(RjacInvFunctor<_Derived>(jac));
+
   return jac;
 }
 
@@ -282,7 +293,10 @@ struct LjacInvFunctor {
 template <typename _Derived>
 typename BundleTangentBase<_Derived>::Jacobian BundleTangentBase<_Derived>::ljacinv() const {
   Jacobian jac;
+  jac.setZero();
+
   (*this).list().traverse(LjacInvFunctor<_Derived>(jac));
+
   return jac;
 }
 
@@ -306,7 +320,10 @@ struct SmallAdjFunctor {
 template <typename _Derived>
 typename BundleTangentBase<_Derived>::Jacobian BundleTangentBase<_Derived>::smallAdj() const {
   Jacobian jac;
+  jac.setZero();
+
   (*this).list().traverse(SmallAdjFunctor<_Derived>(jac));
+
   return jac;
 }
 

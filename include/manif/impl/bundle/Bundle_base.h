@@ -19,6 +19,8 @@ struct BundleBase : LieGroupBase<_Derived> {
   MANIF_INHERIT_GROUP_AUTO_API
   MANIF_INHERIT_GROUP_OPERATOR
 
+  static constexpr int Size = internal::traits<_Derived>::Size;
+
   // LieGroup common API
 
   /**

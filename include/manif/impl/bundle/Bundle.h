@@ -27,6 +27,8 @@ struct traits<Bundle<_Args...>> {
   static constexpr int DoF = ListInfo<ListType>::DoF;
   static constexpr int RepSize = ListInfo<ListType>::RepSize;
 
+  static constexpr int Size = ListInfo<ListType>::Size;
+
   using DataType = Eigen::Matrix<Scalar, RepSize, 1>;
 
   using Jacobian = Eigen::Matrix<Scalar, DoF, DoF>;
@@ -75,13 +77,13 @@ struct Bundle : BundleBase<Bundle<_Args...>> {
 
   const DataType& coeffs() const;
 
+  const ListType& list() const;
+
+  ListType& list();
+
  protected:
   friend struct LieGroupBase<Bundle<_Args...>>;
   DataType& coeffs_nonconst();
-
-  friend Base;
-  const ListType& list() const;
-  ListType& list();
 
   DataType data_;
   ListType list_;

@@ -23,6 +23,8 @@ struct traits<BundleTangent<_Args...>> {
   static constexpr int DoF = ListInfo<ListType>::DoF;
   static constexpr int RepSize = DoF;
 
+  static constexpr int Size = ListInfo<ListType>::Size;
+
   using DataType = Eigen::Matrix<Scalar, RepSize, 1>;
 
   using Jacobian = Eigen::Matrix<Scalar, DoF, DoF>;
@@ -61,10 +63,6 @@ struct BundleTangent : BundleTangentBase<BundleTangent<_Args...>> {
   // Copy constructor given Eigen
   template <typename _EigenDerived>
   BundleTangent(const Eigen::MatrixBase<_EigenDerived>& v);
-
-  // Copy constructor given a list of LieGroup elements
-  template <typename... _Others>
-  BundleTangent(const _Others&... others);
 
   // Tangent common API
   DataType& coeffs();
