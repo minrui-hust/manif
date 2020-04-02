@@ -14,4 +14,4 @@
 #include "manif/impl/bundle/Bundle_map.h"
 #include "manif/impl/bundle/BundleTangent_map.h"
 
-#endif // _MANIF_RN_H_
+#endif // _MANIF_BUNDLE_H_

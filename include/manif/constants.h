@@ -66,6 +66,8 @@ constexpr _Scalar Constants<_Scalar>::to_rad;
 template <typename _Scalar>
 constexpr _Scalar Constants<_Scalar>::to_deg;
 
+const int Dynamic = Eigen::Dynamic;
+
 } /* namespace manif  */
 
 #endif /* _MANIF_MANIF_CONSTANTS_H_ */
