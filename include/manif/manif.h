@@ -10,6 +10,7 @@
 #include "manif/SE3.h"
 #include "manif/Rn.h"
 #include "manif/Bundle.h"
+#include "manif/Array.h"
 
 #include "manif/algorithms/average.h"
 #include "manif/algorithms/decasteljau.h"
