@@ -12,19 +12,16 @@ template <typename _ElementType, int _N>
 struct ArrayTangent;
 
 namespace internal {
-//! Traits specialization
 template <typename _ElementType, int _N>
 struct traits<Array<_ElementType, _N>> {
-  using ElementType = _ElementType;
-  using Scalar = typename ElementType::Scalar;
+  using Scalar = typename ElementType_::Scalar;
+  using ElementType = Eigen::Map<typename _ElementType::LieGroup>;
+  using ArrayType = std::vector<ElementType>;  // ElementType is an Map, so aligened allocator is not required
 
-  // If is fixed size, std::array is used, if is dynamic size, std::vector is used
-  using ArrayType = std::vector<Eigen::Map<typename ElementType::LieGroup>>;
+  using LieGroup = Array<_ElementType, _N>;
+  using Tangent = ArrayTangent<_ElementType, _N>;
 
-  using LieGroup = Array<ElementType, _N>;
-  using Tangent = ArrayTangent<ElementType, _N>;
-
-  using Base = ArrayBase<Array<ElementType, _N>>;
+  using Base = ArrayBase<LieGroup>;
 
   static constexpr bool IsDynamic = (_N == Dynamic);
 
@@ -49,11 +46,11 @@ template <typename _ElementType, int _N>
 struct Array : ArrayBase<Array<_ElementType, _N>> {
  private:
   using Base = ArrayBase<Array<_ElementType, _N>>;
-  using Type = Array<_ElementType, _N>;
   using ElementType = typename Base::ElementType;
   using ArrayType = typename Base::ArrayType;
 
   static constexpr bool IsDynamic = Base::IsDynamic;
+  static constexpr int Size = Base::Size;
   static constexpr int ElementRepSize = ElementType::RepSize;
 
  public:
@@ -62,22 +59,41 @@ struct Array : ArrayBase<Array<_ElementType, _N>> {
   MANIF_COMPLETE_GROUP_TYPEDEF
   MANIF_INHERIT_GROUP_API
 
-  Array();
+  Array() {
+    if (!IsDynamic) {
+      array_.resize(Size, ElementType(nullptr));
+      for (auto i = 0; i < Size; ++i) {
+        array_[i] = ElementType(data_.data() + i * ElementRepSize);
+      }
+    }
+  }
 
-  Array(int size);
+  Array(int size) {
+    int real_size = IsDynamic ? size : Size;  // parameter size is ignored in fixed size
+    array_.resize(Size, ElementType(nullptr));
+    for (auto i = 0; i < real_size; ++i) {
+      array_[i] = ElementType(data_.data() + i * ElementRepSize);
+    }
+  }
 
-  // Copy constructor
-  Array(const Bundle& o);
-
-  template <typename _DerivedOther>
-  Array(const BundleBase<_DerivedOther>& o);
-
-  template <typename _DerivedOther>
-  Array(const LieGroupBase<_DerivedOther>& o);
-
-  // Copy constructor given Eigen
   template <typename _EigenDerived>
-  Array(const Eigen::MatrixBase<_EigenDerived>& data);
+  Array(const Eigen::MatrixBase<_EigenDerived>& data) : data_(data) {
+    // Todo: 1.make sure data.rows() is integer times of ElementRepSize in dynamic mode
+    //       2.make sure data.rows() equal Size*ElementReqSize in static mode
+    int real_size = IsDynamic ? data.rows() / ElementRepSize : Size;
+    array_.resize(_N, ElementType(nullptr));
+    for (auto i = 0; i < real_size; ++i) {
+      array_[i] = ElementType(data_.data() + i * ElementRepSize);
+    }
+  }
+
+  Array(const Array& o) : Array(o.coeffs()) {}
+
+  template <typename _DerivedOther>
+  Array(const BundleBase<_DerivedOther>& o) : Array(o.coeffs()) {}
+
+  template <typename _DerivedOther>
+  Array(const LieGroupBase<_DerivedOther>& o) : Array(o.coeffs()) {}
 
   const DataType& coeffs() const { return data_; }
 
@@ -92,52 +108,6 @@ struct Array : ArrayBase<Array<_ElementType, _N>> {
   DataType data_;
   ArrayType array_;
 };
-
-template <typename _ElementType, int _N>
-Array<_ElementType, _N>::Array() {
-  if (!IsDynamic) {
-    array_.resize(_N, Eigen::Map<typename ElementType::LieGroup>(nullptr));
-    for (auto i = 0; i < _N; ++i) {
-      array_[i] = Eigen::Map<typename ElementType::LieGroup>(data_.data() + i * ElementRepSize);
-    }
-  }
-}
-
-template <typename _ElementType, int _N>
-Array<_ElementType, _N>::Array(int size) : data_(size * ElementRepSize) {
-  int real_size = IsDynamic ? size : _N;
-  array_.resize(_N, Eigen::Map<typename ElementType::LieGroup>(nullptr));
-  for (auto i = 0; i < real_size; ++i) {
-    array_[i] = Eigen::Map<typename ElementType::LieGroup>(data_.data() + i * ElementRepSize);
-  }
-}
-
-template <typename _ElementType, int _N>
-template <typename _EigenDerived>
-Array<_ElementType, _N>::Array(const Eigen::MatrixBase<_EigenDerived>& data) : data_(data) {
-  int real_size = IsDynamic ? data.rows() / ElementRepSize : _N;
-  array_.resize(_N, Eigen::Map<typename ElementType::LieGroup>(nullptr));
-  for (auto i = 0; i < real_size; ++i) {
-    array_[i] = Eigen::Map<typename ElementType::LieGroup>(data_.data() + i * ElementRepSize);
-  }
-}
-
-template <typename _ElementType, int _N>
-Array<_ElementType, _N>::Array(const Array& o) : Array(o.coeffs()) {
-  //
-}
-
-template <typename _ElementType, int _N>
-template <typename _DerivedOther>
-Array<_ElementType, _N>::Array(const ArrayBase<_DerivedOther>& o) : Array(o.coeffs()) {
-  //
-}
-
-template <typename _ElementType, int _N>
-template <typename _DerivedOther>
-Array<_ElementType, _N>::Array(const LieGroupBase<_DerivedOther>& o) : Array(o.coeffs()) {
-  //
-}
 
 }  // namespace manif
 
